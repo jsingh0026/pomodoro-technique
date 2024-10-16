@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Focus Mode</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      width: 300px;
+      padding: 20px;
+      background-color: #f5f5f7;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #007aff;
+      color: white;
+    }
+
+    .focus-on {
+      background-color: #34c759; /* Green for active mode */
+      color: white;
+    }
+
+    .focus-off {
+      background-color: #ff3b30; /* Red for inactive mode */
+      color: white;
+    }
+
+    .timer {
+      margin-top: 20px;
+      font-size: 48px;
+      font-weight: 600;
+      color: #007aff;
+      letter-spacing: 1px;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 16px;
+      font-weight: 400;
+      color: #666;
+    }
+
+    .options-link {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #007aff;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .options-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h2>Focus Mode</h2>
+
+  <!-- Focus Mode Toggle Button -->
+  <button id="toggleFocus" class="focus-off">Focus Mode: Off</button>
+
+  <!-- Start Timer Button -->
+  <button id="startTimer" class="timer-button">Start Focus Timer (25 min)</button>
+
+  <!-- Timer Display -->
+  <div class="timer" id="timerDisplay">00:00</div>
+
+  <!-- Focus Mode Status -->
+  <div class="status" id="focusStatus">Focus Mode is currently off</div>
+
+  <!-- Options Link -->
+  <a class="options-link" id="optionsPage">Options</a>
+
+  <script src="popup.js"></script>
+</body>
+</html>
