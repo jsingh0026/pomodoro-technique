@@ -23,5 +23,5 @@ Focus Mode for Productivity is a sleek Chrome extension designed to boost your p
 
 1. **Download the Repository**:
    ```bash
-   git clone https://github.com/your-username/rofocus-extension.git
+   git clone https://github.com/jassemble/focus-mode-productivity.git
    ```
