@@ -14,7 +14,6 @@ A simple and sleek Pomodoro timer built as a Chrome extension. This extension he
 
 - **Start/Pause:** Click the “Start Focus Timer” button to begin the countdown. Click the button again to pause the timer.
 - **Reset:** Click the “Reset Timer” button to reset the timer back to the default 25 minutes.
-- **Focus Mode Toggle:** Click to toggle Focus Mode on and off, which changes the button color and text.
 
 ## Permissions
 
