@@ -10,6 +10,14 @@ function updateBadgeText() {
   chrome.action.setBadgeText({ text });
 }
 
+// Save the current timer state to storage
+function saveTimerState() {
+  chrome.storage.sync.set({
+    isRunning,
+    timeRemaining,
+  });
+}
+
 // Start the timer
 function startTimer() {
   if (!isRunning) {
@@ -18,6 +26,7 @@ function startTimer() {
       if (timeRemaining > 0) {
         timeRemaining--;
         updateBadgeText();
+        saveTimerState(); // Save state
       } else {
         clearInterval(timer);
         isRunning = false;
@@ -32,6 +41,7 @@ function startTimer() {
 function pauseTimer() {
   clearInterval(timer);
   isRunning = false;
+  saveTimerState(); // Save state
 }
 
 // Reset the timer
@@ -40,6 +50,7 @@ function resetTimer() {
   isRunning = false;
   timeRemaining = 25 * 60; // Reset to 25 minutes
   updateBadgeText();
+  saveTimerState(); // Save state
 }
 
 // Listen for messages from the popup

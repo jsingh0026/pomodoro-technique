@@ -2,10 +2,18 @@ const timerDisplay = document.getElementById("timerDisplay");
 const startPauseButton = document.getElementById("startPauseButton");
 const resetButton = document.getElementById("resetButton");
 
-let isRunning = false;
-
 // Hide timer display until data is loaded
 timerDisplay.style.visibility = "hidden";
+
+// Fetch the latest timer state on load to avoid stale display
+function fetchInitialTimerState() {
+  chrome.storage.sync.get(["isRunning", "timeRemaining"], (data) => {
+    const isRunning = data.isRunning || false;
+    const timeRemaining = data.timeRemaining || 25 * 60; // Default to 25 minutes
+    startPauseButton.textContent = isRunning ? "Pause" : "Start";
+    updateTimerDisplay(timeRemaining);
+  });
+}
 
 // Update the timer display
 function updateTimerDisplay(time) {
@@ -20,27 +28,18 @@ function updateTimerDisplay(time) {
 // Toggle the start/pause state in the background
 function toggleStartPause() {
   chrome.runtime.sendMessage({ action: "startPauseTimer" }, (response) => {
-    isRunning = response.isRunning;
+    const { isRunning, timeRemaining } = response;
     startPauseButton.textContent = isRunning ? "Pause" : "Start";
-    updateTimerDisplay(response.timeRemaining);
+    updateTimerDisplay(timeRemaining);
   });
 }
 
 // Reset the timer in the background
 function resetTimer() {
   chrome.runtime.sendMessage({ action: "resetTimer" }, (response) => {
-    isRunning = response.isRunning;
+    const { isRunning, timeRemaining } = response;
     startPauseButton.textContent = "Start";
-    updateTimerDisplay(response.timeRemaining);
-  });
-}
-
-// Fetch the latest timer state on load to avoid stale display
-function fetchInitialTimerState() {
-  chrome.runtime.sendMessage({ action: "getTimerState" }, (response) => {
-    isRunning = response.isRunning;
-    startPauseButton.textContent = isRunning ? "Pause" : "Start";
-    updateTimerDisplay(response.timeRemaining);
+    updateTimerDisplay(timeRemaining);
   });
 }
 
@@ -54,8 +53,8 @@ fetchInitialTimerState();
 // Refresh the timer every second to stay in sync with the background
 setInterval(() => {
   chrome.runtime.sendMessage({ action: "getTimerState" }, (response) => {
-    isRunning = response.isRunning;
-    updateTimerDisplay(response.timeRemaining);
+    const { isRunning, timeRemaining } = response;
+    updateTimerDisplay(timeRemaining);
     startPauseButton.textContent = isRunning ? "Pause" : "Start";
   });
 }, 1000);
