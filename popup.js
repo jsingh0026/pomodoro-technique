@@ -1,64 +1,61 @@
-let isFocusModeOn = false;
-let remainingTime;
+const timerDisplay = document.getElementById("timerDisplay");
+const startPauseButton = document.getElementById("startPauseButton");
+const resetButton = document.getElementById("resetButton");
 
-// Load saved timer and Focus Mode state from storage on popup load
-document.addEventListener("DOMContentLoaded", () => {
-  chrome.storage.sync.get(["isFocusModeOn", "remainingTime"], (data) => {
-    isFocusModeOn = data.isFocusModeOn || false;
-    remainingTime = data.remainingTime || 1500; // Default to 25 minutes
+let isRunning = false;
 
-    updateFocusModeUI(isFocusModeOn);
-    updateTimerDisplay(remainingTime);
-  });
+// Hide timer display until data is loaded
+timerDisplay.style.visibility = "hidden";
 
-  // Listen for messages from the background script
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "updateTimer") {
-      remainingTime = message.remainingTime;
-      updateTimerDisplay(remainingTime);
-    }
-  });
-});
-
-document.getElementById("toggleFocus").addEventListener("click", () => {
-  toggleFocusMode();
-});
-
-document.getElementById("startTimer").addEventListener("click", () => {
-  chrome.runtime.sendMessage({ action: "startTimer" }); // Start timer in background
-});
-
-// Function to toggle Focus Mode
-function toggleFocusMode() {
-  isFocusModeOn = !isFocusModeOn;
-  chrome.storage.sync.set({ isFocusModeOn });
-  updateFocusModeUI(isFocusModeOn);
-  chrome.runtime.sendMessage({ action: "toggleFocusMode" }); // Notify background script
-}
-
-// Update the timer display in the popup
+// Update the timer display
 function updateTimerDisplay(time) {
   const minutes = Math.floor(time / 60);
   const seconds = time % 60;
-  document.getElementById("timerDisplay").textContent = `${
-    minutes < 10 ? "0" + minutes : minutes
-  }:${seconds < 10 ? "0" + seconds : seconds}`;
+  timerDisplay.textContent = `${minutes < 10 ? "0" : ""}${minutes}:${
+    seconds < 10 ? "0" : ""
+  }${seconds}`;
+  timerDisplay.style.visibility = "visible"; // Show timer display once updated
 }
 
-// Update Focus Mode UI
-function updateFocusModeUI(isFocusModeOn) {
-  const toggleButton = document.getElementById("toggleFocus");
-  const statusDisplay = document.getElementById("focusStatus");
-
-  if (isFocusModeOn) {
-    toggleButton.classList.remove("focus-off");
-    toggleButton.classList.add("focus-on");
-    toggleButton.textContent = "Focus Mode: On";
-    statusDisplay.textContent = "Focus Mode is currently on";
-  } else {
-    toggleButton.classList.remove("focus-on");
-    toggleButton.classList.add("focus-off");
-    toggleButton.textContent = "Focus Mode: Off";
-    statusDisplay.textContent = "Focus Mode is currently off";
-  }
+// Toggle the start/pause state in the background
+function toggleStartPause() {
+  chrome.runtime.sendMessage({ action: "startPauseTimer" }, (response) => {
+    isRunning = response.isRunning;
+    startPauseButton.textContent = isRunning ? "Pause" : "Start";
+    updateTimerDisplay(response.timeRemaining);
+  });
 }
+
+// Reset the timer in the background
+function resetTimer() {
+  chrome.runtime.sendMessage({ action: "resetTimer" }, (response) => {
+    isRunning = response.isRunning;
+    startPauseButton.textContent = "Start";
+    updateTimerDisplay(response.timeRemaining);
+  });
+}
+
+// Fetch the latest timer state on load to avoid stale display
+function fetchInitialTimerState() {
+  chrome.runtime.sendMessage({ action: "getTimerState" }, (response) => {
+    isRunning = response.isRunning;
+    startPauseButton.textContent = isRunning ? "Pause" : "Start";
+    updateTimerDisplay(response.timeRemaining);
+  });
+}
+
+// Set up event listeners
+startPauseButton.addEventListener("click", toggleStartPause);
+resetButton.addEventListener("click", resetTimer);
+
+// Fetch timer state immediately upon loading
+fetchInitialTimerState();
+
+// Refresh the timer every second to stay in sync with the background
+setInterval(() => {
+  chrome.runtime.sendMessage({ action: "getTimerState" }, (response) => {
+    isRunning = response.isRunning;
+    updateTimerDisplay(response.timeRemaining);
+    startPauseButton.textContent = isRunning ? "Pause" : "Start";
+  });
+}, 1000);

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Focus Mode</title>
+  <title>Pomodoro Timer</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -30,21 +30,15 @@
       cursor: pointer;
       font-weight: 500;
       transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #007aff;
       color: white;
     }
 
-    .focus-on {
-      background-color: #34c759; /* Green for active mode */
-      color: white;
+    .start-pause {
+      background-color: #34c759; /* Green for start */
     }
 
-    .focus-off {
-      background-color: #ff3b30; /* Red for inactive mode */
-      color: white;
+    .reset {
+      background-color: #ff3b30; /* Red for reset */
     }
 
     .timer {
@@ -54,45 +48,17 @@
       color: #007aff;
       letter-spacing: 1px;
     }
-
-    .status {
-      margin-top: 10px;
-      font-size: 16px;
-      font-weight: 400;
-      color: #666;
-    }
-
-    .options-link {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #007aff;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .options-link:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 <body>
-  <h2>Focus Mode</h2>
-
-  <!-- Focus Mode Toggle Button -->
-  <button id="toggleFocus" class="focus-off">Focus Mode: Off</button>
-
-  <!-- Start Timer Button -->
-  <button id="startTimer" class="timer-button">Start Focus Timer (25 min)</button>
+  <h2>Pomodoro Timer</h2>
 
   <!-- Timer Display -->
-  <div class="timer" id="timerDisplay">00:00</div>
+  <div class="timer" id="timerDisplay">25:00</div>
 
-  <!-- Focus Mode Status -->
-  <div class="status" id="focusStatus">Focus Mode is currently off</div>
-
-  <!-- Options Link -->
-  <a class="options-link" id="optionsPage">Options</a>
+  <!-- Start/Pause and Reset Buttons -->
+  <button id="startPauseButton" class="start-pause">Start</button>
+  <button id="resetButton" class="reset">Reset</button>
 
   <script src="popup.js"></script>
 </body>

@@ -1,109 +1,58 @@
-let isFocusModeOn = false;
-let timerDuration = 25 * 60; // 25 minutes in seconds
-let remainingTime = timerDuration; // Default to 25 minutes
-let timerInterval;
+let timer;
+let isRunning = false;
+let timeRemaining = 25 * 60; // Default to 25 minutes
 
-const blockedSites = [
-  "*://*.facebook.com/*",
-  "*://*.twitter.com/*",
-  "*://*.youtube.com/*",
-  "*://*.instagram.com/*",
-  "*://*.reddit.com/*",
-];
-
-// Load initial state from storage
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.set({
-    isFocusModeOn: false,
-    remainingTime: timerDuration,
-  });
-});
-
-// Get initial state from storage
-chrome.storage.sync.get(["isFocusModeOn", "remainingTime"], (data) => {
-  isFocusModeOn = data.isFocusModeOn || false;
-  remainingTime = data.remainingTime || timerDuration;
-  updateBlockingStatus();
-  updateBadge(remainingTime);
-});
-
-// Update badge and notify popup with the remaining time
-function updateBadge(time) {
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
-  const badgeText = `${minutes < 10 ? "0" + minutes : minutes}:${
-    seconds < 10 ? "0" + seconds : seconds
-  }`;
-
-  chrome.action.setBadgeText({ text: badgeText });
-}
-
-// Notify the popup about the updated time
-function notifyPopup(time) {
-  chrome.runtime.sendMessage({ action: "updateTimer", remainingTime: time });
-}
-
-// Update blocking status based on Focus Mode
-function updateBlockingStatus() {
-  if (isFocusModeOn) {
-    chrome.declarativeNetRequest.updateDynamicRules({
-      addRules: [
-        // Add your blocking rules here
-      ],
-      removeRuleIds: [1, 2, 3, 4, 5],
-    });
-    startTimer();
-  } else {
-    chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: [1, 2, 3, 4, 5],
-    });
-    clearInterval(timerInterval); // Clear timer
-    updateBadge(0); // Clear badge display
-  }
+// Update badge text on the icon with the remaining time
+function updateBadgeText() {
+  const minutes = Math.floor(timeRemaining / 60);
+  const seconds = timeRemaining % 60;
+  const text = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  chrome.action.setBadgeText({ text });
 }
 
 // Start the timer
 function startTimer() {
-  if (timerInterval) return; // Prevent multiple intervals
-
-  timerInterval = setInterval(() => {
-    remainingTime--;
-    chrome.storage.sync.set({ remainingTime }); // Save remaining time
-
-    updateBadge(remainingTime); // Update badge
-    notifyPopup(remainingTime); // Notify popup
-
-    if (remainingTime <= 0) {
-      clearInterval(timerInterval);
-      timerFinished();
-    }
-  }, 1000);
-}
-
-// When the timer finishes
-function timerFinished() {
-  chrome.notifications.create({
-    type: "basic",
-    iconUrl: "icons/icon48.png",
-    title: "Focus Time Over!",
-    message: "Your focus session is done. Time for a break!",
-    priority: 2,
-  });
-  remainingTime = timerDuration; // Reset timer for next session
-  updateBadge(remainingTime); // Reset badge display
-  notifyPopup(remainingTime); // Notify popup
-}
-
-// Toggle Focus Mode
-function toggleFocusMode() {
-  isFocusModeOn = !isFocusModeOn;
-  chrome.storage.sync.set({ isFocusModeOn });
-  updateBlockingStatus();
-}
-
-// Listen for messages from popup to toggle Focus Mode
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.action === "toggleFocusMode") {
-    toggleFocusMode();
+  if (!isRunning) {
+    isRunning = true;
+    timer = setInterval(() => {
+      if (timeRemaining > 0) {
+        timeRemaining--;
+        updateBadgeText();
+      } else {
+        clearInterval(timer);
+        isRunning = false;
+        alert("Time's up! Take a break!");
+        resetTimer();
+      }
+    }, 1000);
   }
+}
+
+// Pause the timer
+function pauseTimer() {
+  clearInterval(timer);
+  isRunning = false;
+}
+
+// Reset the timer
+function resetTimer() {
+  clearInterval(timer);
+  isRunning = false;
+  timeRemaining = 25 * 60; // Reset to 25 minutes
+  updateBadgeText();
+}
+
+// Listen for messages from the popup
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "startPauseTimer") {
+    isRunning ? pauseTimer() : startTimer();
+  } else if (message.action === "resetTimer") {
+    resetTimer();
+  } else if (message.action === "getTimerState") {
+    sendResponse({ isRunning, timeRemaining });
+  }
+  sendResponse({ isRunning, timeRemaining });
 });
+
+// Initialize badge text on load
+updateBadgeText();
